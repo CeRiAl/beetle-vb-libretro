@@ -32,6 +32,27 @@ bool MDFN_SaveSettings(const char *path)
 
 uint64 MDFN_GetSettingUI(const char *name)
 {
+   if (!strcmp("vb.3dmode", name))
+   {
+      fprintf(stderr, "Setting UI: %s=%x\n", name, 0);
+      return 0;
+   }
+   if (!strcmp("vb.liprescale", name))
+   {
+      fprintf(stderr, "Setting UI: %s=%x\n", name, 1);
+      return 1;
+   }
+   if (!strcmp("vb.sidebyside.separation", name))
+   {
+      fprintf(stderr, "Setting UI: %s=%x\n", name, 0);
+      return 0;
+   }
+   if (!strcmp("vb.3dreverse", name))
+   {
+      fprintf(stderr, "Setting UI: %s=%x\n", name, 0);
+      return 0;
+   }
+   
    if (!strcmp("vb.anaglyph.lcolor", name))
    {
       fprintf(stderr, "Setting UI: %s=%x\n", name, setting_vb_lcolor);
