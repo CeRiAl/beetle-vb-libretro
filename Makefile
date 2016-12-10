@@ -280,7 +280,7 @@ all: $(TARGET)
 ifeq ($(DEBUG),0)
    FLAGS += -O2 $(EXTRA_GCC_FLAGS)
 else
-   FLAGS += -O0
+   FLAGS += -O0 -g
 endif
 
 LDFLAGS += $(fpic) $(SHARED)
