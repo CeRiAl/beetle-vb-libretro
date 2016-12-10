@@ -3,6 +3,7 @@
 
 #include <string>
 
+extern uint32_t setting_vb_3d_mode;
 extern uint32_t setting_vb_lcolor;
 extern uint32_t setting_vb_rcolor;
 extern uint32_t setting_vb_anaglyph_preset;

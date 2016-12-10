@@ -21,6 +21,7 @@
 #include <string>
 #include "settings.h"
 
+uint32_t setting_vb_3d_mode=0;
 uint32_t setting_vb_lcolor=0xFF0000;
 uint32_t setting_vb_rcolor=0x000000;
 uint32_t setting_vb_anaglyph_preset=0;
@@ -34,25 +35,13 @@ uint64 MDFN_GetSettingUI(const char *name)
 {
    if (!strcmp("vb.3dmode", name))
    {
-      fprintf(stderr, "Setting UI: %s=%x\n", name, 0);
-      return 0;
-   }
-   if (!strcmp("vb.liprescale", name))
-   {
-      fprintf(stderr, "Setting UI: %s=%x\n", name, 1);
-      return 1;
+      fprintf(stderr, "Setting UI: %s=%x\n", name, setting_vb_3d_mode);
+      return setting_vb_3d_mode;
    }
    if (!strcmp("vb.sidebyside.separation", name))
    {
-      fprintf(stderr, "Setting UI: %s=%x\n", name, 0);
-      return 0;
+      return 14;
    }
-   if (!strcmp("vb.3dreverse", name))
-   {
-      fprintf(stderr, "Setting UI: %s=%x\n", name, 0);
-      return 0;
-   }
-   
    if (!strcmp("vb.anaglyph.lcolor", name))
    {
       fprintf(stderr, "Setting UI: %s=%x\n", name, setting_vb_lcolor);
