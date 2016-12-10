@@ -2108,9 +2108,9 @@ static int Load(const char *name, MDFNFILE *fp)
 
   case VB3DMODE_SIDEBYSIDE:
 	MDFNGameInfo->nominal_width = 384 * 2 + sbs_separation;
-  	MDFNGameInfo->nominal_height = 224;
+	MDFNGameInfo->nominal_height = 448;
   	MDFNGameInfo->fb_width = 384 * 2 + sbs_separation;
- 	MDFNGameInfo->fb_height = 224;
+	MDFNGameInfo->fb_height = 448;
 	break;
  }
  MDFNGameInfo->lcm_width = MDFNGameInfo->fb_width;
@@ -2656,11 +2656,7 @@ static void set_basename(const char *path)
 #define MEDNAFEN_CORE_GEOMETRY_MAX_W 384
 #define MEDNAFEN_CORE_GEOMETRY_MAX_H 224
 #define MEDNAFEN_CORE_GEOMETRY_ASPECT_RATIO (4.0 / 3.0)
-#define FB_WIDTH 384
-#define FB_HEIGHT 224
 
-
-#define FB_MAX_HEIGHT FB_HEIGHT
 
 const char *mednafen_core_str = MEDNAFEN_CORE_NAME;
 
@@ -2760,6 +2756,18 @@ static void check_variables(void)
 {
    struct retro_variable var = {0};
 
+    var.key = "vb_3d_mode";
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      if (strcmp(var.value, "anaglyph") == 0)
+		setting_vb_3d_mode = 0;
+	  else if (strcmp(var.value, "sidebyside") == 0)
+		 setting_vb_3d_mode = 2;
+
+      log_cb(RETRO_LOG_INFO, "[%s]: 3D mode changed: %s .\n", mednafen_core_str, var.value);
+   }
+
     var.key = "vb_color_mode";
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -2798,7 +2806,7 @@ static void check_variables(void)
       else if (strcmp(var.value, "yellow & blue") == 0)
          setting_vb_anaglyph_preset = 6;      
 
-      log_cb(RETRO_LOG_INFO, "[%s]: Palette changed: %s .\n", mednafen_core_str, var.value);  
+      log_cb(RETRO_LOG_INFO, "[%s]: Anaglyph preset changed: %s .\n", mednafen_core_str, var.value);
    }      
 }
 
@@ -2867,7 +2875,7 @@ bool retro_load_game(const struct retro_game_info *info)
    MDFN_PixelFormat pix_fmt(MDFN_COLORSPACE_RGB, 16, 8, 0, 24);
    memset(&last_pixel_format, 0, sizeof(MDFN_PixelFormat));
    
-   surf = new MDFN_Surface(NULL, FB_WIDTH, FB_HEIGHT, FB_WIDTH, pix_fmt);
+   surf = new MDFN_Surface(NULL, MDFNGameInfo->fb_width, MDFNGameInfo->fb_height, MDFNGameInfo->fb_width, pix_fmt);
 
    hookup_ports(true);
 
@@ -2936,7 +2944,7 @@ void retro_run()
    update_input();
 
    static int16_t sound_buf[0x10000];
-   static MDFN_Rect rects[FB_MAX_HEIGHT];
+   static MDFN_Rect rects[MDFNGameInfo->fb_height];
    rects[0].w = ~0;
 
    EmulateSpecStruct spec = {0};
@@ -2977,10 +2985,10 @@ void retro_run()
 
 #if defined(WANT_32BPP)
    const uint32_t *pix = surf->pixels;
-   video_cb(pix, width, height, FB_WIDTH << 2);
+   video_cb(pix, width, height, MDFNGameInfo->fb_width << 2);
 #elif defined(WANT_16BPP)
    const uint16_t *pix = surf->pixels16;
-   video_cb(pix, width, height, FB_WIDTH << 1);
+   video_cb(pix, width, height, MDFNGameInfo->fb_width << 1);
 #endif
 
    video_frames++;
@@ -3048,6 +3056,7 @@ void retro_set_environment(retro_environment_t cb)
    environ_cb = cb;
 
     static const struct retro_variable vars[] = {
+	  { "vb_3d_mode", "3D mode (restart); anaglyph|sidebyside" },
 	  { "vb_anaglyph_preset", "Anaglyph preset (restart); disabled|red & blue|red & cyan|red & electric cyan|red & green|green & magenta|yellow & blue" },
       { "vb_color_mode", "Palette (restart); black & red|black & white" },
       { NULL, NULL },

@@ -127,9 +127,14 @@ static void MakeColorLUT(const MDFN_PixelFormat &format)
                b_prime = b_prime * ((Anaglyph_Colors[lr ^ VB3DReverse] >> 0) & 0xFF) / 255;
                break;
             default:
+               /*
                r_prime = r_prime * ((Default_Color >> 16) & 0xFF) / 255;
                g_prime = g_prime * ((Default_Color >> 8) & 0xFF) / 255;
                b_prime = b_prime * ((Default_Color >> 0) & 0xFF) / 255;
+               */
+               r_prime = r_prime * ((Anaglyph_Colors[lr ^ VB3DReverse] >> 16) & 0xFF) / 255;
+               g_prime = g_prime * ((Anaglyph_Colors[lr ^ VB3DReverse] >> 8) & 0xFF) / 255;
+               b_prime = b_prime * ((Anaglyph_Colors[lr ^ VB3DReverse] >> 0) & 0xFF) / 255;
                break;
          }
          ColorLUTNoGC[lr][i][0] = pow(r_prime, 2.2 / 1.0);
@@ -904,7 +909,7 @@ void VIP_StartFrame(EmulateSpecStruct *espec)
 
       case VB3DMODE_SIDEBYSIDE:
          espec->DisplayRect.w = 768 + VBSBS_Separation;
-         espec->DisplayRect.h = 224;
+         espec->DisplayRect.h = 448;
          break;
    }
 
@@ -1110,23 +1115,38 @@ static void CopyFBColumnToTarget_CScope(void)
 
 static void CopyFBColumnToTarget_SideBySide_BASE(const bool DisplayActive_arg, const int lr, const int dest_lr)
 {
+   int y, y_sub;
    const int fb = DisplayFB;
-   uint32 *target = surface->pixels + Column + (dest_lr ? (384 + VBSBS_Separation) : 0);
-   const int32 pitch32 = surface->pitch32;
+
+#if defined(WANT_8BPP)
+   uint8  *target = surface->pixels8  + Column + (dest_lr ? (384 + VBSBS_Separation) : 0);
+#elif defined(WANT_16BPP)
+   uint16 *target = surface->pixels16 + Column + (dest_lr ? (384 + VBSBS_Separation) : 0);
+#else
+   uint32 *target = surface->pixels   + Column + (dest_lr ? (384 + VBSBS_Separation) : 0);
+#endif
+   const int32 pitchinpix = surface->pitchinpix;
    const uint8 *fb_source = &FB[fb][lr][64 * Column];
 
-   for(int y = 56; y; y--)
+   for(y = 56; y; y--)
    {
       uint32 source_bits = *fb_source;
 
-      for(int y_sub = 4; y_sub; y_sub--)
+      for(y_sub = 4; y_sub; y_sub--)
       {
-         if(DisplayActive_arg)
-            *target = BrightCLUT[lr][source_bits & 3];
-         else
-            *target = 0;
+         uint32 pixel = BrightCLUT[0][source_bits & 3];
+
+         if(!DisplayActive_arg)
+            pixel = 0;
+
+		*target = pixel;
+
          source_bits >>= 2;
-         target += pitch32;
+         target += pitchinpix;
+
+         // vertical line doubling
+         *target = pixel;
+         target += pitchinpix;
       }
       fb_source++;
    }
