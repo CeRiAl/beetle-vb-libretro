@@ -202,6 +202,16 @@ else ifeq ($(platform), wiiu)
    FLAGS += -DHAVE_MKDIR
    STATIC_LINKING = 1
 
+# Raspberry Pi 2
+else ifeq ($(platform), rpi2)
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
+   FLAGS += -DARM
+   FLAGS += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -funsafe-math-optimizations
+   FLAGS += -fomit-frame-pointer -ffast-math
+   HAVE_NEON = 1
+
 else ifneq (,$(findstring armv,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
