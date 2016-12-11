@@ -2657,6 +2657,7 @@ static void set_basename(const char *path)
 #define MEDNAFEN_CORE_GEOMETRY_MAX_H 224
 #define MEDNAFEN_CORE_GEOMETRY_ASPECT_RATIO (4.0 / 3.0)
 
+#define FB_MAX_HEIGHT 488
 
 const char *mednafen_core_str = MEDNAFEN_CORE_NAME;
 
@@ -2944,7 +2945,7 @@ void retro_run()
    update_input();
 
    static int16_t sound_buf[0x10000];
-   static MDFN_Rect rects[MDFNGameInfo->fb_height];
+   static MDFN_Rect rects[FB_MAX_HEIGHT];
    rects[0].w = ~0;
 
    EmulateSpecStruct spec = {0};
